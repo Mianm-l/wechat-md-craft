@@ -1,0 +1,20 @@
+{
+  "name": "wechat-md-craft",
+  "version": "1.0.0",
+  "private": true,
+  "description": "100% Client-Side High Aesthetic Markdown to WeChat Official Account Formatter. Zero Server Storage.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "marked": "^15.0.7",
+    "lucide-vue-next": "^0.475.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.1.0"
+  }
+}
