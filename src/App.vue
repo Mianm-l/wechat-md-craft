@@ -97,7 +97,8 @@ const activeTheme = computed(() => THEME_MAP[currentThemeId.value] || THEMES[0])
 
 const renderedHtml = computed(() => {
   return compileMarkdown(markdownText.value, activeTheme.value, {
-    convertLinksToFootnotes: true
+    convertLinksToFootnotes: true,
+    fontSize: fontSize.value
   });
 });
 

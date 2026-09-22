@@ -1,7 +1,7 @@
 import { Marked } from 'marked';
 
 export function compileMarkdown(markdownText, theme, options = {}) {
-  const { convertLinksToFootnotes = true } = options;
+  const { convertLinksToFootnotes = true, fontSize = '15px' } = options;
 
   if (!markdownText) return '';
 
@@ -85,7 +85,11 @@ export function compileMarkdown(markdownText, theme, options = {}) {
     }
   });
 
-  // 6. Apply Tag Inline Styles
+  // 6. Apply Tag Inline Styles with dynamic fontSize
+  const pStyle = (theme.p || '').replace(/font-size:\s*\d+px;?/g, `font-size: ${fontSize};`);
+  const liStyle = (theme.li || '').replace(/font-size:\s*\d+px;?/g, `font-size: ${fontSize};`);
+  const containerStyle = (theme.container || '').replace(/font-size:\s*\d+px;?/g, `font-size: ${fontSize};`);
+
   const tagStyles = {
     h1: theme.h1,
     h2: theme.h2,
@@ -93,13 +97,13 @@ export function compileMarkdown(markdownText, theme, options = {}) {
     h4: theme.h3,
     h5: theme.h3,
     h6: theme.h3,
-    p: theme.p,
+    p: pStyle,
     blockquote: theme.blockquote,
     strong: theme.strong,
     em: theme.em,
     ul: theme.ul,
     ol: theme.ol,
-    li: theme.li,
+    li: liStyle,
     table: theme.table,
     th: theme.th,
     td: theme.td,
@@ -109,7 +113,6 @@ export function compileMarkdown(markdownText, theme, options = {}) {
   for (const [tag, style] of Object.entries(tagStyles)) {
     if (!style) continue;
     root.querySelectorAll(tag).forEach(el => {
-      // If element already has style attribute, merge or override
       const existing = el.getAttribute('style');
       el.setAttribute('style', existing ? `${style} ${existing}` : style);
     });
@@ -133,5 +136,5 @@ export function compileMarkdown(markdownText, theme, options = {}) {
     root.appendChild(fnSection);
   }
 
-  return `<section style="${theme.container}">${root.innerHTML}</section>`;
+  return `<section style="${containerStyle}">${root.innerHTML}</section>`;
 }
