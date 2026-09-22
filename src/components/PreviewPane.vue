@@ -1,22 +1,23 @@
 <template>
-  <div style="flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-main); padding: 0.75rem 1rem; overflow: hidden;">
+  <div style="flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-main); padding: 1rem; overflow: hidden;">
     
-    <!-- Real Mobile Phone Mockup (iPhone with Dynamic Island & Internal Smooth Scrolling) -->
+    <!-- Sleek Minimalist Mobile Frame (Pure WeChat Native App Style) -->
     <div 
       v-if="isMobileView" 
       class="phone-mockup"
       style="
         width: 395px;
-        height: calc(100vh - 75px);
+        height: calc(100vh - 78px);
         max-height: 840px;
-        background: #0f172a;
-        border-radius: 48px;
-        padding: 11px;
-        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 3px #334155, inset 0 0 6px rgba(255, 255, 255, 0.15);
+        background: #0b0f19;
+        border: 9px solid #1e293b;
+        border-radius: 36px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
         display: flex;
         flex-direction: column;
         position: relative;
         flex-shrink: 0;
+        overflow: hidden;
       "
     >
       <!-- Phone Inner Screen -->
@@ -24,46 +25,39 @@
         style="
           flex: 1;
           background: #ffffff;
-          border-radius: 38px;
+          border-radius: 25px;
           overflow: hidden;
           display: flex;
           flex-direction: column;
           position: relative;
         "
       >
-        <!-- iPhone Dynamic Island & Status Bar -->
+        <!-- WeChat Official Top Navigation Bar (Clean & Professional) -->
         <div 
           style="
             background: #ffffff;
-            padding: 8px 20px 6px 20px;
+            height: 46px;
+            padding: 0 16px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: 11px;
-            font-weight: 600;
-            color: #0f172a;
+            justify-content: space-between;
             border-bottom: 1px solid #f1f5f9;
             user-select: none;
             flex-shrink: 0;
           "
         >
-          <span style="font-family: -apple-system, sans-serif; font-weight: 700;">09:41</span>
-          
-          <!-- Dynamic Island Pill -->
-          <div style="width: 90px; height: 22px; background: #0f172a; border-radius: 12px; display: flex; align-items: center; justify-content: flex-end; padding-right: 7px; box-shadow: inset 0 0 2px rgba(255,255,255,0.2);">
-            <span style="width: 7px; height: 7px; border-radius: 50%; background: #1e293b; display: inline-block;"></span>
+          <div style="display: flex; align-items: center; gap: 2px; color: #1e293b; font-size: 13px; font-weight: 500;">
+            <ChevronLeft :size="20" style="margin-left: -4px;" />
+            <span>微信</span>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
-            <span>5G</span>
-            <span>🔋</span>
+          <div style="font-size: 13px; font-weight: 600; color: #0f172a; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            公众号文章预览
           </div>
-        </div>
 
-        <!-- WeChat Article Top Header -->
-        <div style="background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 7px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #475569; flex-shrink: 0; user-select: none;">
-          <span style="font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 250px;">微信公众号预览</span>
-          <span style="font-size: 13px; letter-spacing: 2px; color: #64748b; font-weight: bold;">•••</span>
+          <div style="color: #64748b; display: flex; align-items: center;">
+            <MoreHorizontal :size="20" />
+          </div>
         </div>
 
         <!-- Internal Scrollable Article Body -->
@@ -80,9 +74,9 @@
           <div ref="contentRef" :style="{ fontSize: fontSize }" v-html="renderedHtml"></div>
         </div>
 
-        <!-- iPhone Home Bar Indicator -->
+        <!-- Sleek Bottom Home Bar -->
         <div style="background: #ffffff; padding: 6px 0 8px 0; display: flex; justify-content: center; flex-shrink: 0; user-select: none;">
-          <div style="width: 125px; height: 4px; background: #cbd5e1; border-radius: 2px;"></div>
+          <div style="width: 120px; height: 4px; background: #e2e8f0; border-radius: 2px;"></div>
         </div>
       </div>
     </div>
@@ -112,6 +106,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { ChevronLeft, MoreHorizontal } from 'lucide-vue-next';
 
 defineProps({
   renderedHtml: { type: String, required: true },
