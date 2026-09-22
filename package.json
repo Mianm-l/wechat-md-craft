@@ -2,6 +2,7 @@
   "name": "wechat-md-craft",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "100% Client-Side High Aesthetic Markdown to WeChat Official Account Formatter. Zero Server Storage.",
   "scripts": {
     "dev": "vite",

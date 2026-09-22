@@ -1,4 +1,4 @@
-import { marked } from 'marked';
+import { Marked } from 'marked';
 
 function escapeHtml(str) {
   return str
@@ -126,7 +126,7 @@ export function compileMarkdown(markdownText, theme, options = {}) {
     }
   };
 
-  const markedInstance = new marked.Marked({
+  const markedInstance = new Marked({
     renderer,
     gfm: true,
     breaks: true
