@@ -29,7 +29,12 @@
       <!-- Main Rendered Content -->
       <div 
         ref="contentRef"
-        style="padding: 1.25rem 1.25rem 3rem 1.25rem; flex: 1;"
+        :style="{
+          padding: '1.25rem 1.25rem 3rem 1.25rem',
+          flex: 1,
+          color: '#1e293b',
+          fontSize: fontSize
+        }"
         v-html="renderedHtml"
       ></div>
     </div>
@@ -41,7 +46,8 @@ import { ref } from 'vue';
 
 defineProps({
   renderedHtml: { type: String, required: true },
-  isMobileView: { type: Boolean, default: true }
+  isMobileView: { type: Boolean, default: true },
+  fontSize: { type: String, default: '15px' }
 });
 
 const contentRef = ref(null);

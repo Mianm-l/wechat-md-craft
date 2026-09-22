@@ -1,158 +1,137 @@
 import { Marked } from 'marked';
 
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
 export function compileMarkdown(markdownText, theme, options = {}) {
   const { convertLinksToFootnotes = true } = options;
-  const footnotes = [];
 
-  const renderer = {
-    heading(arg1, arg2) {
-      // Support both marked v15 object { text, depth } and legacy (text, level)
-      const text = typeof arg1 === 'object' ? arg1.text : arg1;
-      const level = typeof arg1 === 'object' ? arg1.depth : arg2;
-      const style = theme[`h${level}`] || theme.h3;
-      return `<h${level} style="${style}">${text}</h${level}>`;
-    },
-
-    paragraph(arg1) {
-      const text = typeof arg1 === 'object' ? arg1.text : arg1;
-      return `<p style="${theme.p}">${text}</p>`;
-    },
-
-    blockquote(arg1) {
-      const text = typeof arg1 === 'object' ? arg1.text : arg1;
-      return `<blockquote style="${theme.blockquote}">${text}</blockquote>`;
-    },
-
-    strong(arg1) {
-      const text = typeof arg1 === 'object' ? arg1.text : arg1;
-      return `<strong style="${theme.strong}">${text}</strong>`;
-    },
-
-    em(arg1) {
-      const text = typeof arg1 === 'object' ? arg1.text : arg1;
-      return `<em style="${theme.em}">${text}</em>`;
-    },
-
-    codespan(arg1) {
-      const text = typeof arg1 === 'object' ? arg1.text : arg1;
-      return `<code style="${theme.code_inline}">${text}</code>`;
-    },
-
-    code(arg1, arg2) {
-      const codeText = typeof arg1 === 'object' ? arg1.text : arg1;
-      const lang = typeof arg1 === 'object' ? arg1.lang : arg2;
-      const escaped = escapeHtml(codeText);
-
-      return `
-        <section style="${theme.pre_wrapper}">
-          <div style="${theme.mac_dots}">
-            <span style="width:10px;height:10px;border-radius:50%;background:#ff5f56;display:inline-block;"></span>
-            <span style="width:10px;height:10px;border-radius:50%;background:#ffbd2e;display:inline-block;"></span>
-            <span style="width:10px;height:10px;border-radius:50%;background:#27c93f;display:inline-block;"></span>
-            ${lang ? `<span style="margin-left:auto;font-size:11px;color:#94a3b8;font-family:sans-serif;">${lang}</span>` : ''}
-          </div>
-          <pre style="${theme.pre}"><code style="${theme.code}">${escaped}</code></pre>
-        </section>
-      `;
-    },
-
-    link(arg1, arg2, arg3) {
-      const href = typeof arg1 === 'object' ? arg1.href : arg1;
-      const text = typeof arg1 === 'object' ? arg1.text : arg3;
-
-      if (convertLinksToFootnotes && href && !href.startsWith('#')) {
-        footnotes.push({ text: text || href, href });
-        const idx = footnotes.length;
-        return `<span>${text}</span><sup style="${theme.footnote_sup}">[${idx}]</sup>`;
-      }
-      return `<a href="${href}" style="color:${theme.primaryColor};text-decoration:none;">${text}</a>`;
-    },
-
-    list(arg1, arg2) {
-      const body = typeof arg1 === 'object' ? arg1.body : arg1;
-      const ordered = typeof arg1 === 'object' ? arg1.ordered : arg2;
-      const tag = ordered ? 'ol' : 'ul';
-      const style = ordered ? theme.ol : theme.ul;
-      return `<${tag} style="${style}">${body}</${tag}>`;
-    },
-
-    listitem(arg1) {
-      const text = typeof arg1 === 'object' ? arg1.text : arg1;
-      return `<li style="${theme.li}">${text}</li>`;
-    },
-
-    table(arg1, arg2) {
-      let header = '';
-      let body = '';
-      if (typeof arg1 === 'object') {
-        header = arg1.header;
-        body = arg1.body;
-      } else {
-        header = arg1;
-        body = arg2;
-      }
-      return `
-        <table style="${theme.table}">
-          <thead>${header}</thead>
-          <tbody>${body}</tbody>
-        </table>
-      `;
-    },
-
-    tablerow(arg1) {
-      const content = typeof arg1 === 'object' ? arg1.text : arg1;
-      return `<tr>${content}</tr>`;
-    },
-
-    tablecell(arg1, arg2) {
-      const content = typeof arg1 === 'object' ? arg1.text : arg1;
-      const flags = typeof arg1 === 'object' ? arg1.header : (arg2 ? arg2.header : false);
-      const tag = flags ? 'th' : 'td';
-      const style = flags ? theme.th : theme.td;
-      return `<${tag} style="${style}">${content}</${tag}>`;
-    },
-
-    hr() {
-      return `<hr style="${theme.hr}" />`;
-    }
-  };
+  if (!markdownText) return '';
 
   const markedInstance = new Marked({
-    renderer,
     gfm: true,
     breaks: true
   });
 
-  let html = markedInstance.parse(markdownText || '');
+  // 1. Standard full-featured markdown to HTML
+  const rawHtml = markedInstance.parse(markdownText);
 
-  // Append footnotes section if any
-  if (footnotes.length > 0) {
-    let fnHtml = `
-      <section style="${theme.footnote_section}">
-        <div style="font-weight:600;margin-bottom:8px;font-size:13px;color:${theme.primaryColor};">引用与参考链接：</div>
+  // 2. Parse into DOM tree for flawless inline CSS injection & transforms
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<div id="md-root">${rawHtml}</div>`, 'text/html');
+  const root = doc.getElementById('md-root');
+
+  if (!root) return '';
+
+  // 3. Process Links -> Footnotes (WeChat does not allow external links)
+  const footnotes = [];
+  if (convertLinksToFootnotes) {
+    const links = root.querySelectorAll('a');
+    links.forEach(a => {
+      const href = a.getAttribute('href') || '';
+      const text = a.textContent.trim() || href;
+
+      if (href && !href.startsWith('#')) {
+        footnotes.push({ text, href });
+        const sup = doc.createElement('sup');
+        sup.setAttribute('style', theme.footnote_sup || 'font-size: 12px; font-weight: bold;');
+        sup.textContent = `[${footnotes.length}]`;
+
+        const span = doc.createElement('span');
+        span.textContent = text;
+
+        const container = doc.createElement('span');
+        container.appendChild(span);
+        container.appendChild(sup);
+
+        a.replaceWith(container);
+      } else {
+        a.setAttribute('style', `color: ${theme.primaryColor}; text-decoration: none; font-weight: 500;`);
+      }
+    });
+  }
+
+  // 4. Transform Code Blocks (<pre><code>) into Mac-style card
+  const preElements = root.querySelectorAll('pre');
+  preElements.forEach(pre => {
+    const code = pre.querySelector('code');
+    const codeClass = code ? code.className : '';
+    const langMatch = codeClass.match(/language-([a-zA-Z0-9_-]+)/);
+    const lang = langMatch ? langMatch[1] : '';
+
+    const section = doc.createElement('section');
+    section.setAttribute('style', theme.pre_wrapper);
+
+    const macDots = doc.createElement('div');
+    macDots.setAttribute('style', theme.mac_dots);
+    macDots.innerHTML = `
+      <span style="width:10px;height:10px;border-radius:50%;background:#ff5f56;display:inline-block;margin-right:6px;"></span>
+      <span style="width:10px;height:10px;border-radius:50%;background:#ffbd2e;display:inline-block;margin-right:6px;"></span>
+      <span style="width:10px;height:10px;border-radius:50%;background:#27c93f;display:inline-block;margin-right:6px;"></span>
+      ${lang ? `<span style="margin-left:auto;font-size:11px;color:#94a3b8;font-family:sans-serif;font-weight:600;">${lang}</span>` : ''}
     `;
+
+    pre.setAttribute('style', theme.pre);
+    if (code) {
+      code.setAttribute('style', theme.code);
+    }
+
+    section.appendChild(macDots);
+    section.appendChild(pre.cloneNode(true));
+    pre.replaceWith(section);
+  });
+
+  // 5. Transform inline code (<code> outside of <pre>)
+  root.querySelectorAll('code').forEach(c => {
+    if (!c.closest('pre')) {
+      c.setAttribute('style', theme.code_inline);
+    }
+  });
+
+  // 6. Apply Tag Inline Styles
+  const tagStyles = {
+    h1: theme.h1,
+    h2: theme.h2,
+    h3: theme.h3,
+    h4: theme.h3,
+    h5: theme.h3,
+    h6: theme.h3,
+    p: theme.p,
+    blockquote: theme.blockquote,
+    strong: theme.strong,
+    em: theme.em,
+    ul: theme.ul,
+    ol: theme.ol,
+    li: theme.li,
+    table: theme.table,
+    th: theme.th,
+    td: theme.td,
+    hr: theme.hr
+  };
+
+  for (const [tag, style] of Object.entries(tagStyles)) {
+    if (!style) continue;
+    root.querySelectorAll(tag).forEach(el => {
+      // If element already has style attribute, merge or override
+      const existing = el.getAttribute('style');
+      el.setAttribute('style', existing ? `${style} ${existing}` : style);
+    });
+  }
+
+  // 7. Append Footnotes Section if any
+  if (footnotes.length > 0) {
+    const fnSection = doc.createElement('section');
+    fnSection.setAttribute('style', theme.footnote_section);
+    let fnHtml = `<div style="font-weight:700;margin-bottom:10px;font-size:13px;color:${theme.primaryColor};">引用与参考链接：</div>`;
     footnotes.forEach((fn, idx) => {
       fnHtml += `
-        <div style="margin:4px 0;line-height:1.6;">
+        <div style="margin:4px 0;line-height:1.6;font-size:12px;">
           <span style="font-weight:bold;color:${theme.primaryColor};">[${idx + 1}]</span>
-          <span> ${fn.text}: </span>
+          <span style="color:#334155;font-weight:500;"> ${fn.text}: </span>
           <span style="word-break:break-all;color:#64748b;">${fn.href}</span>
         </div>
       `;
     });
-    fnHtml += '</section>';
-    html += fnHtml;
+    fnSection.innerHTML = fnHtml;
+    root.appendChild(fnSection);
   }
 
-  // Wrap in root container with inline style
-  return `<section style="${theme.container}">${html}</section>`;
+  return `<section style="${theme.container}">${root.innerHTML}</section>`;
 }

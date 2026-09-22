@@ -30,6 +30,22 @@
         </select>
       </div>
 
+      <!-- Font Size Selector -->
+      <div style="display: flex; align-items: center; gap: 0.3rem;">
+        <span style="font-size: 0.75rem; color: var(--text-dim);">字号:</span>
+        <select 
+          :value="fontSize" 
+          @change="$emit('update:fontSize', $event.target.value)"
+          class="btn-ghost"
+          style="background: var(--bg-input); border-color: var(--border-color); color: var(--text-main); font-size: 0.8rem; padding: 0.35rem 0.5rem; cursor: pointer; outline: none;"
+        >
+          <option value="14px">14px (紧凑)</option>
+          <option value="15px">15px (标准)</option>
+          <option value="16px">16px (舒适)</option>
+          <option value="17px">17px (大字号)</option>
+        </select>
+      </div>
+
       <!-- Device Frame Toggle -->
       <div style="display: flex; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; padding: 2px;">
         <button 
@@ -84,13 +100,14 @@ import {
 defineProps({
   themes: { type: Array, required: true },
   currentThemeId: { type: String, required: true },
+  fontSize: { type: String, default: '15px' },
   isMobileView: { type: Boolean, default: true },
   wordCount: { type: Number, default: 0 },
   readTime: { type: Number, default: 1 },
   copied: { type: Boolean, default: false }
 });
 
-defineEmits(['update:theme', 'toggle-view', 'export-html', 'copy-wechat']);
+defineEmits(['update:theme', 'update:fontSize', 'toggle-view', 'export-html', 'copy-wechat']);
 </script>
 
 <style scoped>

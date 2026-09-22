@@ -3,11 +3,13 @@
     <Navbar 
       :themes="THEMES"
       :current-theme-id="currentThemeId"
+      :font-size="fontSize"
       :is-mobile-view="isMobileView"
       :word-count="wordCount"
       :read-time="readTime"
       :copied="copied"
       @update:theme="currentThemeId = $event"
+      @update:font-size="fontSize = $event"
       @toggle-view="isMobileView = $event"
       @copy-wechat="handleCopyWechat"
       @export-html="handleExportHtml"
@@ -23,6 +25,7 @@
       <PreviewPane 
         :rendered-html="renderedHtml"
         :is-mobile-view="isMobileView"
+        :font-size="fontSize"
       />
     </div>
   </div>
@@ -86,6 +89,7 @@ public RestTemplate restTemplate() {
 
 const markdownText = ref('');
 const currentThemeId = ref('techBlue');
+const fontSize = ref('15px');
 const isMobileView = ref(true);
 const copied = ref(false);
 
