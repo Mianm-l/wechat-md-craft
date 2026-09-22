@@ -108,3 +108,33 @@ body {
   color: var(--text-main);
   background: var(--border-color);
 }
+
+/* iOS Phone Internal Scrollbar */
+.phone-scroll-body::-webkit-scrollbar {
+  width: 4px;
+}
+.phone-scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.phone-scroll-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+.phone-scroll-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Desktop Reader Scrollbar */
+.desktop-scroll-body::-webkit-scrollbar {
+  width: 6px;
+}
+.desktop-scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.desktop-scroll-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.desktop-scroll-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
